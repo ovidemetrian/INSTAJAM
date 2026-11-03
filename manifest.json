@@ -1,12 +1,18 @@
 {
+  "id": "instajam-app",
   "name": "InstaJam",
   "short_name": "InstaJam",
   "description": "Hum it, write it, make it, mix it, ship it. No login.",
-  "start_url": "./index.html", "scope": "./", "display": "standalone",
-  "background_color": "#0b0c0f", "theme_color": "#0b0c0f",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b0c0f",
+  "theme_color": "#0b0c0f",
   "icons": [
-    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
-    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
   ],
   "shortcuts": [
     {"name": "Hum", "url": "./index.html"},
