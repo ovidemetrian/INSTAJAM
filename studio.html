@@ -1,0 +1,455 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0c0f">
+<meta name="description" content="Six AI seats write one song together.">
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>[hidden]{display:none!important}body{margin:0}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}.backdoor{display:inline-flex;align-items:center;gap:4px;margin-bottom:2px;color:#8e93a1;font:600 12px/1 "Barlow Condensed",system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;text-decoration:none}@media (orientation:landscape) and (max-height:560px){.backdoor{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);margin:0;z-index:5}}</style>
+<title>Six Seat Studio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Figtree:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a mixing console — one channel strip per AI seat, colour-coded, with a demo deck and an output bus below */
+:root{
+  --bg:#0e1120; --panel:#171b31; --panel2:#1f2440; --line:#2d3358; --fg:#f4f2ec; --mute:#a3a8c6;
+  --red:#ff4d3f; --yellow:#ffcb2f; --blue:#3f8dff; --green:#38e08c; --magenta:#ff5fd2; --cyan:#2fe3ef;
+  --display:"Unbounded", "Arial Black", system-ui, sans-serif;
+  --body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--fg)}
+body{font-family:var(--body);font-size:15px;line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 90px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,7vw,48px);line-height:1;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1 .dot{display:inline-flex;gap:5px;vertical-align:middle;margin-left:10px}
+h1 .dot i{width:11px;height:11px;border-radius:50%;display:block}
+.sub{color:var(--mute);margin:8px 0 0;max-width:62ch}
+h2{font-family:var(--display);font-weight:500;font-size:15px;letter-spacing:.08em;text-transform:uppercase;margin:0}
+label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);font-weight:700}
+textarea,input,select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+textarea{resize:vertical}
+input[type=range]{padding:0;accent-color:var(--yellow)}
+button{font:inherit;font-weight:700;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);padding:9px 14px;min-height:42px}
+button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+button:disabled{opacity:.5;cursor:default}
+.go{background:var(--yellow);color:#14110a;border-color:var(--yellow);font-family:var(--display);font-weight:800;letter-spacing:.03em;padding:12px 20px}
+.idea{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.row>*{min-width:0}
+.field{display:grid;gap:5px;flex:1 1 220px}
+.status{font-family:var(--mono);font-size:12.5px;color:var(--mute)}
+.example{font-family:var(--mono);font-size:12px;color:#14110a;background:var(--cyan);border-radius:4px;padding:2px 7px;font-weight:600}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--mute)}
+.flow b{color:var(--fg);font-weight:600}
+.seats{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.seat{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:12px;display:flex;flex-direction:column;min-width:0}
+.seat header{display:flex;align-items:center;gap:10px;padding:12px 14px 8px}
+.seat .n{width:28px;height:28px;border-radius:50%;background:var(--c);color:#111;font-family:var(--display);font-weight:800;font-size:13px;display:grid;place-items:center;flex:none}
+.seat .role{font-family:var(--display);font-weight:500;font-size:14px;line-height:1.2}
+.seat .job{font-size:12.5px;color:var(--mute)}
+.seat .eng{margin-left:auto;width:auto;max-width:140px;padding:6px 8px;font-size:13px}
+.seat .out{margin:0 14px;padding:10px 12px;background:var(--bg);border-radius:8px;font-family:var(--mono);font-size:12.5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;min-height:120px;max-height:260px;overflow:auto;border:1px solid var(--line)}
+.seat .out.wait{color:var(--mute)}
+.seat .tools{display:flex;flex-wrap:wrap;gap:8px;padding:10px 14px 14px}
+.seat .tools button{min-height:36px;padding:6px 11px;font-size:13px}
+.seat .paste{display:grid;gap:8px;padding:0 14px 14px}
+.seat .paste textarea{font-family:var(--mono);font-size:12.5px;min-height:70px}
+.seat.live .paste{display:none}
+.seat.busy{box-shadow:0 0 0 2px var(--c) inset}
+.deck,.bus{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
+.chords{display:flex;flex-wrap:wrap;gap:8px}
+.chord{font-family:var(--display);font-weight:500;font-size:18px;min-width:64px;text-align:center;padding:12px 10px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);transition:background .08s,color .08s}
+.chord.on{background:var(--yellow);color:#14110a;border-color:var(--yellow)}
+.parts{display:flex;flex-wrap:wrap;gap:8px}
+.parts label{display:flex;gap:6px;align-items:center;text-transform:none;letter-spacing:0;font-size:14px;color:var(--fg);background:var(--panel2);border:1px solid var(--line);padding:7px 11px;border-radius:999px;font-weight:600}
+.parts input{width:auto;accent-color:var(--blue)}
+.play{background:var(--red);border-color:var(--red);color:#fff;font-family:var(--display);font-weight:800;min-width:120px}
+.play.stop{background:var(--blue);border-color:var(--blue)}
+.bpm{font-family:var(--mono);font-variant-numeric:tabular-nums;min-width:66px}
+.bus pre{margin:0;padding:12px;background:var(--bg);border:1px solid var(--line);border-radius:8px;font-family:var(--mono);font-size:12.5px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:340px;overflow:auto}
+.links{display:flex;flex-wrap:wrap;gap:8px}
+.links a{color:var(--fg);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600}
+.links a:hover{border-color:var(--cyan)}
+.note{font-size:13px;color:var(--mute);max-width:70ch}
+#badge{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.08em;padding:9px 14px;border-radius:999px;background:linear-gradient(90deg,var(--red),var(--yellow),var(--blue));color:#0e1120;cursor:grab;touch-action:none;user-select:none;box-shadow:0 0 18px rgba(255,203,47,.55);animation:glow 2.6s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:0 0 30px rgba(63,141,255,.75)}}
+@media (prefers-reduced-motion:reduce){#badge{animation:none}.chord{transition:none}}
+@media (max-width:420px){.seats{grid-template-columns:1fr}.seat .eng{max-width:120px}}
+</style>
+
+</head><body>
+<div class="wrap">
+<a class="backdoor" href="index.html">‹ Home</a>
+  <div>
+    <h1>Six Seat Studio<span class="dot" aria-hidden="true"><i style="background:var(--red)"></i><i style="background:var(--yellow)"></i><i style="background:var(--blue)"></i></span></h1>
+    <p class="sub">Six AI seats write one song together. You hear a rough demo right here, then take the finished prompt to any music generator. No music-app login needed.</p>
+  </div>
+
+  <section class="idea" aria-labelledby="ideaH">
+    <div class="row" style="justify-content:space-between"><h2 id="ideaH">The idea</h2><span class="example" id="exTag">Example session</span></div>
+    <div class="row">
+      <div class="field" style="flex-basis:100%"><label for="idea">What is the song about?</label>
+        <textarea id="idea" rows="2">People expecting miracles from AI in music, while the human ear still decides what means something.</textarea></div>
+      <div class="field"><label for="genre">Genre and feel</label><input id="genre" value="synth-pop, warm analog pads, hopeful with a wink"></div>
+      <div class="field" style="flex:0 1 160px"><label for="voice">Voice</label><input id="voice" value="male vocal"></div>
+    </div>
+    <div class="row">
+      <button class="go" id="run">Run the band</button>
+      <button id="stopRun" hidden>Stop</button>
+      <span class="status" id="status" role="status">Seats 1–4 play together, seat 5 pushes back, seat 6 writes the final prompt.</span>
+    </div>
+    <div class="flow" aria-label="Order of work"><b>Meh</b> idea → <b>1–4</b> draft in parallel → <b>But</b> seat 5 → <b>Aha</b> seat 6 → <b>Pám pám</b> play & export</div>
+  </section>
+
+  <section class="seats" id="seats" aria-label="The six seats"></section>
+
+  <section class="deck" aria-labelledby="deckH">
+    <div class="row" style="justify-content:space-between"><h2 id="deckH">Demo deck</h2><span class="status">Rough sketch in your browser. Not the final record.</span></div>
+    <div class="chords" id="chordLights"></div>
+    <div class="row">
+      <div class="field"><label for="chordIn">Chords (one bar each)</label><input id="chordIn" value="Am F C G"></div>
+      <div class="field" style="flex:0 1 230px"><label for="bpmIn">Tempo <span class="bpm" id="bpmOut">112 BPM</span></label><input type="range" id="bpmIn" min="60" max="170" value="112"></div>
+    </div>
+    <div class="row">
+      <button class="play" id="play">Play</button>
+      <div class="parts">
+        <label><input type="checkbox" id="pDrums" checked>Drums</label>
+        <label><input type="checkbox" id="pBass" checked>Bass</label>
+        <label><input type="checkbox" id="pPad" checked>Pads</label>
+        <label><input type="checkbox" id="pArp" checked>Arp</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="bus" aria-labelledby="busH">
+    <div class="row" style="justify-content:space-between"><h2 id="busH">Output bus</h2><button id="copyAll">Copy full prompt</button></div>
+    <div class="row"><button id="copyStyle">Copy style</button><button id="copyLyrics">Copy lyrics</button><span class="status" id="copyMsg" role="status"></span></div>
+    <pre id="final"></pre>
+    <div class="links">
+      <a href="https://suno.com/create" target="_blank" rel="noopener">Open Suno</a>
+      <a href="https://www.udio.com/create" target="_blank" rel="noopener">Open Udio</a>
+      <a href="https://www.riffusion.com/" target="_blank" rel="noopener">Open Riffusion</a>
+    </div>
+    <p class="note">Each seat can run on Claude live (inside Claude) or on any other AI by paste: copy the seat's brief, ask ChatGPT, Gemini, Grok or another, and paste the answer back. On your own site every seat uses paste mode.</p>
+  </section>
+</div>
+
+<div id="badge" role="note" aria-label="Made by Ovi with Claude">MADE BY OVI WITH CLAUDE</div>
+
+<script>
+(function(){
+const ENGINES=["Claude (live)","ChatGPT","Gemini","Grok","Perplexity","Llama","Copilot"];
+const SEATS=[
+ {id:1,c:"--red",role:"Lyricist",job:"Words that rhyme",
+  ask:(s)=>`${head(s,1)}\nYour seat: LYRICIST.\nWrite complete original lyrics with section tags on their own lines: [Verse 1] [Pre-Chorus] [Chorus] [Verse 2] [Pre-Chorus] [Bridge] [Chorus] [Outro].\nRules: every pair of lines must rhyme, perfect rhymes preferred. Fresh images, no clichés. Never quote existing songs. Output only the lyrics.`},
+ {id:2,c:"--yellow",role:"Composer",job:"Key, tempo, chords",
+  ask:(s)=>`${head(s,2)}\nYour seat: COMPOSER.\nThe FIRST line must be exactly in this form:\nCHORDS: Am F C G | BPM: 112 | KEY: A minor\n(4 to 8 chords, space separated, one bar each, simple chord names like Am, F, Cmaj7, G7, Dsus4).\nThen at most 5 short lines: verse and chorus progressions and melody contour hints. Nothing else.`},
+ {id:3,c:"--blue",role:"Arranger",job:"Structure and instruments",
+  ask:(s)=>`${head(s,3)}\nYour seat: ARRANGER.\nGive the song structure section by section with bar counts and which instruments enter or drop out. At most 12 short lines.`},
+ {id:4,c:"--green",role:"Producer",job:"Sound and mix",
+  ask:(s)=>`${head(s,4)}\nYour seat: PRODUCER.\nGive sound design and mix notes: tones, effects, vocal treatment, space and dynamics. Describe sounds in general terms, never name artists. At most 10 short lines.`},
+ {id:5,c:"--magenta",role:"The But",job:"Pushes back",
+  ask:(s)=>`${head(s,5)}\nYour seat: THE BUT, the critic in the sequence Meh, But, Aha.\nHere is the band's draft:\n\n${draft(s,[1,2,3,4])}\n\nName the 3 to 5 weakest spots (forced or missing rhymes, clichés, chords that fight the mood, structure problems) and give one concrete fix for each. Be blunt and brief. Numbered list only.`},
+ {id:6,c:"--cyan",role:"Prompt Smith",job:"Final prompt",
+  ask:(s)=>`${head(s,6)}\nYour seat: PROMPT SMITH. Turn the band's work into one prompt any AI music generator can take.\n\n${draft(s,[1,2,3,4,5])}\n\nApply every fix from THE BUT. Reply in exactly this format and nothing else:\nTITLE: <song title>\nSTYLE: <comma-separated style tags under 200 characters, including genre, mood, tempo, key instruments and voice, no artist names>\nLYRICS:\n<final lyrics with section tags on their own lines; every pair of lines rhymes>`}
+];
+function head(s,n){return `You are seat ${n} of a six-AI songwriting band.\nSong idea: ${val("idea")}\nGenre and feel: ${val("genre")}\nVoice: ${val("voice")}`}
+function draft(s,ids){return ids.map(i=>`=== ${SEATS[i-1].role.toUpperCase()} ===\n${(state[i]||"(empty)").slice(0,6000)}`).join("\n\n")}
+function val(id){return document.getElementById(id).value.trim()}
+
+const EXAMPLE={
+1:`[Verse 1]
+They say the songs will write themselves by Monday,
+a thousand hooks before the coffee's done;
+type a wish and hit the button, someday, one day,
+out comes thunder, out comes everyone.
+
+[Pre-Chorus]
+Everybody's waiting on the miracle machine,
+like a genie in a box, like a hit-making dream.
+
+[Chorus]
+Press play on the future, turn it up loud,
+silicon singers standing in the crowd.
+But who's gonna tell it when the high end's too bright?
+Who's gonna feel it at two in the night?
+The machine makes the music, the human makes it mean,
+press play on the future, but keep your hands clean.
+
+[Verse 2]
+My grandma played three chords for fifty years,
+wrong notes and all, the whole street sang along;
+now a perfect take is cheaper than our tears,
+but nobody's waiting by the door for that song.
+
+[Bridge]
+Ten thousand tracks a minute, the question stays the same:
+if you didn't struggle with the thought, is the thought your name?
+
+[Outro]
+Keep your ears open, keep the signal clean,
+press play, press play, on the space between.`,
+2:`CHORDS: Am F C G | BPM: 112 | KEY: A minor
+Verse: Am F C G, steady and patient
+Pre-chorus: Dm F G G, lift and hold
+Chorus: F G Am C, melody jumps a fifth on "future"
+Bridge: drop to Am alone, then F G for the return`,
+3:`Intro 4 bars: pads and arp alone
+Verse 1, 8 bars: kick, bass, closed hats
+Pre-chorus 4 bars: snare roll, filter opens
+Chorus 8 bars: full drums, wide pads, backing vocals
+Verse 2, 8 bars: arp leads, drums half-time
+Bridge 4 bars: spoken voice over pad only
+Final chorus 8 bars: add octave lead synth
+Outro 4 bars: radio static, arp fades last`,
+4:`Warm analog pads, slow attack, gentle chorus
+Round sub bass, short release, sidechained to kick
+Tight electronic kick, clap-snare with short room
+Vocal: close and dry in verses, doubled and wide in choruses
+Bridge vocal: telephone-band EQ, half-smiling delivery
+Light tape saturation on the mix bus
+Leave the chorus top end soft, nothing harsh above 10k`,
+5:`1. "someday, one day" is a slant rhyme for "Monday". Fix: "by Monday / fun day" or accept it as a pop slant.
+2. Pre-chorus chords sit on G for two bars and stall. Fix: G to E7 for the lift into F.
+3. The bridge has no musical drop. Fix: cut drums fully for those 4 bars.
+4. "keep your hands clean" may read as guilt. Fix: keep it, it is the hook's point, but land it softer.`,
+6:`TITLE: Press Play on the Future
+STYLE: synth-pop, warm analog pads, driving round bass, bright arpeggio, male vocal, hopeful and wry, 112 BPM, A minor, spoken bridge, radio static outro
+LYRICS:
+[Verse 1]
+They say the songs will write themselves by Monday,
+a thousand hooks before the coffee's done;
+type a wish and hit the button, someday, one day,
+out comes thunder, out comes everyone.
+
+[Pre-Chorus]
+Everybody's waiting on the miracle machine,
+like a genie in a box, like a hit-making dream.
+
+[Chorus]
+Press play on the future, turn it up loud,
+silicon singers standing in the crowd.
+But who's gonna tell it when the high end's too bright?
+Who's gonna feel it at two in the night?
+The machine makes the music, the human makes it mean,
+press play on the future, but keep your hands clean.
+
+[Verse 2]
+My grandma played three chords for fifty years,
+wrong notes and all, the whole street sang along;
+now a perfect take is cheaper than our tears,
+but nobody's waiting by the door for that song.
+
+[Bridge]
+(spoken)
+Ten thousand tracks a minute, the question stays the same:
+if you didn't struggle with the thought, is the thought your name?
+
+[Outro]
+Keep your ears open, keep the signal clean,
+press play, press play, on the space between.`
+};
+const state={...EXAMPLE};
+let sample=null, liveOK=false, runCtl=null;
+
+/* ---------- seats UI ---------- */
+const seatsEl=document.getElementById("seats");
+const els={};
+SEATS.forEach(s=>{
+  const card=document.createElement("article");
+  card.className="seat";card.style.setProperty("--c",`var(${s.c})`);
+  card.innerHTML=`<header><span class="n">${s.id}</span><div><div class="role">${s.role}</div><div class="job">${s.job}</div></div>
+  <select class="eng" id="eng${s.id}" aria-label="AI for seat ${s.id}"></select></header>
+  <div class="out" id="out${s.id}" tabindex="0" aria-label="${s.role} output"></div>
+  <div class="tools"><button data-act="copy">Copy brief</button><button data-act="rerun">Re-run seat</button><button data-act="clear">Clear</button></div>
+  <div class="paste"><label for="paste${s.id}">Paste the answer from your AI</label><textarea id="paste${s.id}" placeholder="Paste here, then Use answer"></textarea><button data-act="use">Use answer</button></div>`;
+  seatsEl.append(card);
+  const sel=card.querySelector("select");
+  els[s.id]={card,out:card.querySelector(".out"),sel,paste:card.querySelector("textarea"),rerun:card.querySelector('[data-act=rerun]')};
+  sel.addEventListener("change",()=>syncSeat(s.id));
+  card.addEventListener("click",e=>{
+    const a=e.target.closest("button")?.dataset.act;if(!a)return;
+    if(a==="copy")copy(s.ask(s),`Seat ${s.id} brief copied. Paste it into ${sel.value}.`);
+    if(a==="use"){const t=els[s.id].paste.value.trim();if(!t){say("Paste an answer first.");return}setOut(s.id,t);els[s.id].paste.value="";say(`Seat ${s.id} answer saved.`)}
+    if(a==="clear"){setOut(s.id,"")}
+    if(a==="rerun")runSeat(s,true);
+  });
+});
+function fillEngines(){
+  SEATS.forEach(s=>{
+    const sel=els[s.id].sel, cur=sel.value;
+    const list=liveOK?ENGINES:ENGINES.slice(1);
+    sel.innerHTML=list.map(e=>`<option>${e}</option>`).join("");
+    const defaults=["ChatGPT","Gemini","Grok","Perplexity","Llama","Copilot"];
+    sel.value=list.includes(cur)?cur:(liveOK?ENGINES[0]:defaults[s.id-1]);
+    syncSeat(s.id);
+  });
+}
+function isLive(id){return liveOK&&els[id].sel.value===ENGINES[0]}
+function syncSeat(id){els[id].card.classList.toggle("live",isLive(id));els[id].rerun.hidden=!isLive(id)}
+function setOut(id,t){
+  state[id]=t;const o=els[id].out;o.classList.toggle("wait",!t);
+  o.textContent=t||(isLive(id)?"Waiting for the band.":`Waiting for ${els[id].sel.value}. Copy the brief, ask it, paste the answer below.`);
+  if(id===2)fromComposer(t);
+  if(id===6)renderFinal();
+}
+function exTagOff(){document.getElementById("exTag").hidden=true}
+
+/* ---------- running the band ---------- */
+const statusEl=document.getElementById("status");
+function say(t){statusEl.textContent=t}
+async function runSeat(s,single){
+  if(!isLive(s.id)){if(!state[s.id])setOut(s.id,"");return}
+  const o=els[s.id];o.card.classList.add("busy");o.out.classList.add("wait");o.out.textContent="Thinking...";
+  const ctl=runCtl||new AbortController();
+  try{
+    const {text}=await sample(s.ask(s),{signal:ctl.signal,cache:false,onText:({text})=>{o.out.classList.remove("wait");o.out.textContent=text}});
+    setOut(s.id,text);
+  }catch(e){
+    o.out.textContent=e.text||"";
+    const msg={not_granted:"Claude was not allowed for this page. Switch seats to paste mode.",rate_limited:"Too many requests right now. Try again in a minute.",sampling_disabled:"Claude is not available on this account here.",cancelled:"Stopped."}[e.code]||"That seat hit a problem. Try Re-run seat.";
+    say(`Seat ${s.id}: ${msg}`);
+    if(["not_granted","sampling_disabled","not_declared","capability_disabled"].includes(e.code)){liveOK=false;fillEngines()}
+    throw e;
+  }finally{o.card.classList.remove("busy")}
+}
+document.getElementById("run").addEventListener("click",async()=>{
+  exTagOff();
+  const live=SEATS.filter(s=>isLive(s.id));
+  if(!live.length){
+    SEATS.forEach(s=>setOut(s.id,""));
+    say("Every seat is in paste mode. Copy each brief in order 1 to 6; seats 5 and 6 read the earlier answers.");return;
+  }
+  SEATS.forEach(s=>setOut(s.id,""));
+  runCtl=new AbortController();
+  const runBtn=document.getElementById("run"),stopBtn=document.getElementById("stopRun");
+  runBtn.disabled=true;stopBtn.hidden=false;
+  try{
+    say("Seats 1 to 4 are drafting...");
+    const first=await Promise.allSettled(SEATS.slice(0,4).map(s=>runSeat(s)));
+    if(runCtl.signal.aborted)throw 0;
+    const waiting=SEATS.slice(0,4).filter(s=>!state[s.id]).map(s=>s.id);
+    if(waiting.length){say(`Waiting on seat ${waiting.join(", ")}. Paste those answers, then run seats 5 and 6.`);return}
+    say("The But is pushing back...");
+    await runSeat(SEATS[4]);
+    if(!state[5]){say("Paste the But's answer in seat 5, then Re-run or paste seat 6.");return}
+    say("Prompt Smith is writing the final prompt...");
+    await runSeat(SEATS[5]);
+    say(state[6]?"Done. Press Play for the demo, then copy the prompt.":"Paste seat 6's answer to finish.");
+  }catch(e){if(runCtl.signal.aborted)say("Stopped.")}
+  finally{runBtn.disabled=false;stopBtn.hidden=true;runCtl=null}
+});
+document.getElementById("stopRun").addEventListener("click",()=>runCtl?.abort());
+
+/* ---------- output bus ---------- */
+function parseFinal(t){
+  const title=(t.match(/^\s*TITLE:\s*(.+)$/mi)||[])[1]||"";
+  const style=(t.match(/^\s*STYLE:\s*(.+)$/mi)||[])[1]||"";
+  const lyr=t.split(/^\s*LYRICS:\s*$/mi)[1];
+  return{title:title.trim(),style:style.trim(),lyrics:(lyr||state[1]||"").trim()};
+}
+function renderFinal(){
+  const f=parseFinal(state[6]||"");
+  document.getElementById("final").textContent=state[6]?state[6]:"Seat 6 writes the final prompt here.";
+}
+function copy(t,okMsg){
+  const m=document.getElementById("copyMsg");
+  const done=()=>{say(okMsg);m.textContent="Copied."};
+  if(!t){say("Nothing to copy yet.");return}
+  try{navigator.clipboard.writeText(t).then(done,()=>fallback(t))}catch(_){fallback(t)}
+  function fallback(x){const ta=document.createElement("textarea");ta.value=x;document.body.append(ta);ta.select();try{document.execCommand("copy");done()}catch(_){say("Copy blocked here. Select the text and copy it by hand.")}ta.remove()}
+}
+document.getElementById("copyAll").onclick=()=>copy(state[6],"Full prompt copied.");
+document.getElementById("copyStyle").onclick=()=>copy(parseFinal(state[6]||"").style,"Style copied.");
+document.getElementById("copyLyrics").onclick=()=>copy(parseFinal(state[6]||"").lyrics,"Lyrics copied.");
+
+/* ---------- demo synth ---------- */
+const NOTE={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+function parseChord(raw){
+  const m=String(raw).trim().split("/")[0].match(/^([A-Ga-g])([#b♯♭]?)(.*)$/);if(!m)return null;
+  let r=NOTE[m[1].toUpperCase()]+(/[#♯]/.test(m[2])?1:/[b♭]/.test(m[2])?-1:0);r=(r+12)%12;
+  const q=m[3];let iv=[0,4,7];
+  if(/^maj7|^M7/.test(q))iv=[0,4,7,11];else if(/^m7|^min7/.test(q))iv=[0,3,7,10];
+  else if(/^dim/.test(q))iv=[0,3,6];else if(/^sus2/.test(q))iv=[0,2,7];else if(/^sus4|^sus/.test(q))iv=[0,5,7];
+  else if(/^aug|^\+/.test(q))iv=[0,4,8];else if(/^m|^min/.test(q))iv=[0,3,7];else if(/^7/.test(q))iv=[0,4,7,10];
+  else if(/^add9/.test(q))iv=[0,4,7,14];
+  return{name:m[1].toUpperCase()+m[2]+m[3],root:r,iv};
+}
+let chords=[];
+function setChords(str){
+  chords=str.split(/[\s,|]+/).map(parseChord).filter(Boolean).slice(0,16);
+  if(!chords.length)chords=[parseChord("Am")];
+  document.getElementById("chordLights").innerHTML=chords.map((c,i)=>`<div class="chord" id="ch${i}">${c.name}</div>`).join("");
+}
+function fromComposer(t){
+  if(!t)return;
+  const cm=t.match(/CHORDS:\s*([^|\n]+)/i);const bm=t.match(/(\d{2,3})\s*BPM|BPM:\s*(\d{2,3})/i);
+  if(cm){document.getElementById("chordIn").value=cm[1].trim();setChords(cm[1])}
+  if(bm){const b=Math.min(170,Math.max(60,+(bm[1]||bm[2])));bpmIn.value=b;bpmOut.textContent=b+" BPM"}
+}
+const chordIn=document.getElementById("chordIn"),bpmIn=document.getElementById("bpmIn"),bpmOut=document.getElementById("bpmOut");
+chordIn.addEventListener("input",()=>setChords(chordIn.value));
+bpmIn.addEventListener("input",()=>bpmOut.textContent=bpmIn.value+" BPM");
+
+let ac=null,master,noise,timer=null,step=0,nextT=0;
+const on=id=>document.getElementById(id).checked;
+const mtof=m=>440*Math.pow(2,(m-69)/12);
+function initAudio(){
+  ac=new (window.AudioContext||window.webkitAudioContext)();
+  const comp=ac.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=4;
+  master=ac.createGain();master.gain.value=.55;master.connect(comp);comp.connect(ac.destination);
+  noise=ac.createBuffer(1,ac.sampleRate,ac.sampleRate);const d=noise.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+}
+function env(g,t,a,peak,rel){g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+a);g.gain.exponentialRampToValueAtTime(0.0001,t+a+rel)}
+function kick(t){const o=ac.createOscillator(),g=ac.createGain();o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(42,t+.14);env(g,t,.003,.95,.32);o.connect(g).connect(master);o.start(t);o.stop(t+.4)}
+function snare(t){const s=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();s.buffer=noise;f.type="bandpass";f.frequency.value=1900;f.Q.value=.7;env(g,t,.002,.5,.17);s.connect(f).connect(g).connect(master);s.start(t);s.stop(t+.22)}
+function hat(t,open){const s=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();s.buffer=noise;f.type="highpass";f.frequency.value=8000;env(g,t,.001,open?.16:.1,open?.12:.035);s.connect(f).connect(g).connect(master);s.start(t);s.stop(t+.2)}
+function bass(t,m,dur){const o=ac.createOscillator(),f=ac.createBiquadFilter(),g=ac.createGain();o.type="sawtooth";o.frequency.value=mtof(m);f.type="lowpass";f.frequency.value=420;env(g,t,.008,.38,dur);o.connect(f).connect(g).connect(master);o.start(t);o.stop(t+dur+.05)}
+function pad(t,notes,dur){
+  const f=ac.createBiquadFilter(),g=ac.createGain();f.type="lowpass";f.frequency.setValueAtTime(700,t);f.frequency.linearRampToValueAtTime(1700,t+dur*.6);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(.09,t+.35);g.gain.setValueAtTime(.09,t+dur-.15);g.gain.exponentialRampToValueAtTime(0.0001,t+dur+.25);
+  f.connect(g).connect(master);
+  notes.forEach(n=>[-7,7].forEach(dt=>{const o=ac.createOscillator();o.type="sawtooth";o.frequency.value=mtof(n);o.detune.value=dt;o.connect(f);o.start(t);o.stop(t+dur+.3)}));
+}
+function pluck(t,m){const o=ac.createOscillator(),g=ac.createGain();o.type="square";o.frequency.value=mtof(m);env(g,t,.003,.06,.16);o.connect(g).connect(master);o.start(t);o.stop(t+.22)}
+function schedule(){
+  const sixteenth=60/(+bpmIn.value)/4;
+  while(nextT<ac.currentTime+.12){
+    const s=step%16, bar=Math.floor(step/16)%chords.length, ch=chords[bar];
+    const base=57+((ch.root-9+12)%12), notes=ch.iv.map(i=>base+i), broot=33+((ch.root-9+12)%12);
+    if(on("pDrums")){if(s===0||s===8||s===10)kick(nextT);if(s===4||s===12)snare(nextT);if(s%2===0)hat(nextT,s===14)}
+    if(on("pBass")&&[0,3,6,8,11,14].includes(s))bass(nextT,s===6||s===14?broot+12:broot,sixteenth*1.6);
+    if(on("pPad")&&s===0)pad(nextT,notes,sixteenth*16);
+    if(on("pArp")&&s%2===1)pluck(nextT,notes[((s-1)/2)%notes.length]+12);
+    if(s===0){const i=bar,delay=Math.max(0,(nextT-ac.currentTime)*1000);setTimeout(()=>light(i),delay)}
+    nextT+=sixteenth;step++;
+  }
+}
+function light(i){document.querySelectorAll(".chord").forEach((el,k)=>el.classList.toggle("on",k===i))}
+const playBtn=document.getElementById("play");
+playBtn.addEventListener("click",async()=>{
+  if(timer){clearInterval(timer);timer=null;playBtn.textContent="Play";playBtn.classList.remove("stop");light(-1);return}
+  if(!ac)initAudio();if(ac.state==="suspended")await ac.resume();
+  step=0;nextT=ac.currentTime+.08;timer=setInterval(schedule,25);schedule();
+  playBtn.textContent="Stop";playBtn.classList.add("stop");
+});
+
+/* ---------- badge drag ---------- */
+const badge=document.getElementById("badge");let drag=null;
+badge.addEventListener("pointerdown",e=>{const r=badge.getBoundingClientRect();drag={dx:e.clientX-r.left,dy:e.clientY-r.top};badge.setPointerCapture(e.pointerId);badge.style.cursor="grabbing"});
+badge.addEventListener("pointermove",e=>{if(!drag)return;const x=Math.min(innerWidth-badge.offsetWidth-4,Math.max(4,e.clientX-drag.dx)),y=Math.min(innerHeight-badge.offsetHeight-4,Math.max(4,e.clientY-drag.dy));Object.assign(badge.style,{left:x+"px",top:y+"px",right:"auto",bottom:"auto"})});
+badge.addEventListener("pointerup",()=>{drag=null;badge.style.cursor="grab"});
+
+/* ---------- start ---------- */
+setChords(chordIn.value);
+fillEngines();
+SEATS.forEach(s=>setOut(s.id,state[s.id]));
+(async()=>{try{if(window.claude&&window.claude.use){sample=await window.claude.use("sample");liveOK=!!sample;fillEngines()}}catch(_){}})();
+})();
+</script>
+
+<script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}</script>
+</body></html>
